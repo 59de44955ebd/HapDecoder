@@ -122,7 +122,6 @@ CHapDecoder::~CHapDecoder() {
 
 //######################################
 // NonDelegatingQueryInterface
-// Reveals ISpecifyPropertyPages
 //######################################
 STDMETHODIMP CHapDecoder::NonDelegatingQueryInterface(REFIID riid, void **ppv) {
     CheckPointer(ppv,E_POINTER);
@@ -144,16 +143,6 @@ void HapMTDecode(HapDecodeWorkFunction function, void *info, unsigned int count,
 
 //######################################
 // Transform
-//
-// Copy the input sample into the output sample - then transform the output
-// sample 'in place'. If we have all keyframes, then we shouldn't do a copy
-// If we have cinepak or indeo and are decompressing frame N it needs frame
-// decompressed frame N-1 available to calculate it, unless we are at a
-// keyframe. So with keyframed codecs, you can't get away with applying the
-// transform to change the frames in place, because you'll mess up the next
-// frames decompression. The runtime MPEG decoder does not have keyframes in
-// the same way so it can be done in place. We know if a sample is key frame
-// as we transform because the sync point property will be set on the sample
 //######################################
 HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMediaSampleOut) {
 
@@ -181,7 +170,7 @@ HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMed
 	if (m_subTypeOut == MEDIASUBTYPE_RGB32) {
 
 		//######################################
-		// DECOMPRESS TEXTURE TO RGB32
+		// Decpmpress texture to RGB32
 		//######################################
 		hr = Decompress(pSrcBuffer, pDestBuffer, pMediaSampleIn->GetActualDataLength());
 		outputBufferDecodedSize = _width * _height * 4;
@@ -191,7 +180,7 @@ HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMed
 	else {
 
 		//######################################
-		// RETURN RAW DXT BUFFER
+		// Return raw RAW DXT buffer
 		//######################################
 
 		// hap decode
@@ -218,8 +207,7 @@ HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMed
 }
 
 //######################################
-// Decompresses texture to RGBA
-// final buffer is m_outputBuffer
+// Decompresses texture to RGB32
 //######################################
 HRESULT CHapDecoder::Decompress (PBYTE pSrcBuffer, PBYTE pDestBuffer, DWORD dwSize) {
 
@@ -515,9 +503,7 @@ HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTI
     CheckPointer(pAlloc, E_POINTER);
     CheckPointer(pProperties, E_POINTER);
 
-	//######################################
-	// calculate needed output buffer size
-	//######################################
+	// Calculate needed output buffer size
 	if (m_subTypeOut == MEDIASUBTYPE_RGB32) {
 
 		// reserve extra buffers for conversion
@@ -565,7 +551,6 @@ HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTI
 
 //######################################
 // GetClassID
-// This is the only method of IPersist
 //######################################
 STDMETHODIMP CHapDecoder::GetClassID (CLSID *pClsid) {
     return CBaseFilter::GetClassID(pClsid);
@@ -573,7 +558,6 @@ STDMETHODIMP CHapDecoder::GetClassID (CLSID *pClsid) {
 
 //######################################
 // GetPages
-// Returns the clsid's of the property pages we support
 //######################################
 STDMETHODIMP CHapDecoder::GetPages(CAUUID *pPages) {
     CheckPointer(pPages,E_POINTER);
