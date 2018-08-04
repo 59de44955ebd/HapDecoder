@@ -11,3 +11,6 @@ Screenshots:
 
 MPC-HC using HapDecoder to decode "sample-1080p30-Hap.avi":
 ![](screenshots/HapDecoder_MPC-HC.png)
+
+HapDecoder in GraphStudio, playing "sample-1080p30-HapQ.avi" (Hap Q) and passing the raw compressed textures (DXTY) to OpenGL (using HapRenderer).
+![](screenshots/HapDecoder_GraphStudio_DXTY.png)
