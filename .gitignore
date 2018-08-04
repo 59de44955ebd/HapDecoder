@@ -1,0 +1,10 @@
+# VS stuff
+*.vs
+*.obj
+*.pdb
+*.log
+*.tlog
+*.res
+*.exp
+*.lastbuildstate
+*.user
