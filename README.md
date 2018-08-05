@@ -5,7 +5,7 @@ Like Renderheads VfW codec, it can either decode to RGB32 (using libsquish, i.e.
 
 Unlike the Renderheads codec, it also supports HAP video encoded by FFmpeg, and in addition to AVI it also supports other containers like MOV and MKV if you use a third party splitter filter like e.g. the LAV Splitter/LAV Splitter source filter.
 
-Note: this first version is still alphaish.
+For an actual application see openFrameworks addon [ofxDirectShowDXTVideoPlayer](https://github.com/59de44955ebd/ofxDirectShowDXTVideoPlayer) which is based on it.
 
 Screenshots:
 
