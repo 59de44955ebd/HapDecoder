@@ -2,7 +2,7 @@
 Based on Hap code by Tom Butterworth
 Copyright (c) 2012-2013, Tom Butterworth and Vidvox LLC.
 
-Valentin Schmidt 2018: implemented OpenMP support for ImageMath_MatrixMultiply8888 and Blend32bppTo32bppChecker 
+Valentin Schmidt 2018: implemented OpenMP support for ImageMath_MatrixMultiply8888
 */
 
 #include <stdint.h>
