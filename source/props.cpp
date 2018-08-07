@@ -10,7 +10,7 @@
 
 #include "dbg.h"
 
-extern bool g_bGenerateTransparencyBackground;
+extern bool g_generateTransparencyBackground;
 extern bool g_useOMP;
 
 //######################################
@@ -52,7 +52,7 @@ INT_PTR CHapDecoderProperties::OnReceiveMessage(HWND hwnd, UINT uMsg, WPARAM wPa
 // OnActivate
 //######################################
 HRESULT CHapDecoderProperties::OnActivate() {
-	CheckDlgButton(m_Dlg, IDC_CHECK1, g_bGenerateTransparencyBackground);
+	CheckDlgButton(m_Dlg, IDC_CHECK1, g_generateTransparencyBackground);
 	CheckDlgButton(m_Dlg, IDC_CHECK2, g_useOMP);
     return NOERROR;
 }
@@ -68,7 +68,7 @@ HRESULT CHapDecoderProperties::OnDeactivate(void) {
 // OnApplyChanges
 //######################################
 HRESULT CHapDecoderProperties::OnApplyChanges() {
-	g_bGenerateTransparencyBackground = IsDlgButtonChecked(m_Dlg, IDC_CHECK1);
+	g_generateTransparencyBackground = IsDlgButtonChecked(m_Dlg, IDC_CHECK1);
 	g_useOMP = IsDlgButtonChecked(m_Dlg, IDC_CHECK2);
     return NOERROR;
 }

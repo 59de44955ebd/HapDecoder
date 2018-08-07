@@ -51,7 +51,7 @@ private:
 	GUID m_subTypeIn;
 	GUID m_subTypeOut;
 
-	bool m_bGenerateTransparencyBackground;
+	bool m_generateTransparencyBackground;
 	bool m_useOMP;
 };
 

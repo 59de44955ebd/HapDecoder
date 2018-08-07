@@ -20,7 +20,7 @@
 
 #include "dbg.h"
 
-bool g_bGenerateTransparencyBackground = FALSE;
+bool g_generateTransparencyBackground = FALSE;
 bool g_useOMP = TRUE;
 
 //######################################
@@ -239,11 +239,11 @@ HRESULT CHapDecoder::Decompress (PBYTE pSrcBuffer, PBYTE pDestBuffer, DWORD dwSi
 	}
 	else { // Hap1, Hap Alpha
 
-		// Convert DXT to RGBA
+		// Convert DXT to BGRA
 		squish::DecompressImage(_tmpBuffer, _width, _height, _dxtBuffer, _dxtFlags);
 		
 		// Swap red-blue channels
-		if (m_bGenerateTransparencyBackground && outputBufferTextureFormat == HapTextureFormat_RGBA_DXT5) {
+		if (m_generateTransparencyBackground && outputBufferTextureFormat == HapTextureFormat_RGBA_DXT5) {
 			Blend32bppTo32bppChecker(_width, _height, true, _tmpBuffer, pDestBuffer, m_useOMP);
 		}
 		else {
@@ -546,7 +546,7 @@ HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTI
 	}
 
 	// store compression settings for this session
-	m_bGenerateTransparencyBackground = g_bGenerateTransparencyBackground;
+	m_generateTransparencyBackground = g_generateTransparencyBackground;
 	m_useOMP = g_useOMP;
 
 	return S_OK;
