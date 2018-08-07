@@ -50,6 +50,9 @@ private:
 
 	GUID m_subTypeIn;
 	GUID m_subTypeOut;
+
+	bool m_bGenerateTransparencyBackground;
+	bool m_useOMP;
 };
 
 // from hapcodec.h
@@ -57,31 +60,18 @@ private:
 // y must be 2^n
 #define align_round(x,y) ((((unsigned int)(x))+(y-1))&(~(y-1)))
 
-#define LAGARITH_RELEASE		// if this is a version to release, disables all debugging info 
-
 inline void * lag_aligned_malloc(void *ptr, int size, int align, char *str) {
 	if (ptr) {
 		try {
-#ifndef LAGARITH_RELEASE
-			char msg[128];
-			sprintf_s(msg, 128, "Buffer '%s' is not null, attempting to free it...", str);
-			MessageBox(HWND_DESKTOP, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
-#endif
 			_aligned_free(ptr);
 		}
 		catch (...) {
-#ifndef LAGARITH_RELEASE
-			char msg[256];
-			sprintf_s(msg, 128, "An exception occurred when attempting to free non-null buffer '%s' in lag_aligned_malloc", str);
-			MessageBox(HWND_DESKTOP, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
-#endif
 		}
 	}
 	return _aligned_malloc(size, align);
 }
 
-#ifdef LAGARITH_RELEASE
-#define lag_aligned_free(ptr, str) { \
+#define LAG_ALIGNED_FREE(ptr, str) { \
 	if ( ptr ){ \
 		try {\
 			_aligned_free((void*)ptr);\
@@ -89,15 +79,3 @@ inline void * lag_aligned_malloc(void *ptr, int size, int align, char *str) {
 	} \
 	ptr=NULL;\
 }
-#else 
-#define lag_aligned_free(ptr, str) { \
-	if ( ptr ){ \
-		try { _aligned_free(ptr); } catch ( ... ){\
-			char err_msg[256];\
-			sprintf_s(err_msg,256,"Error when attempting to free pointer %s, value = 0x%X - file %s line %d",str,ptr,__FILE__, __LINE__);\
-			MessageBox (HWND_DESKTOP, err_msg, "Error", MB_OK | MB_ICONEXCLAMATION);\
-		} \
-	} \
-	ptr=NULL;\
-}
-#endif

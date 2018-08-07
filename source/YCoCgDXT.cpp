@@ -110,7 +110,7 @@
  * This code was modified by Electronic Arts Inc Copyright � 2009
  */
 
-// Compression code removed for HapDecoder by Valentin Schmidt 2018
+// Valentin Schmidt 2018: Compression code removed for HapDecoder
 
 #ifndef word
 typedef unsigned short  word;

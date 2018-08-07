@@ -20,47 +20,47 @@
 
 #include "dbg.h"
 
-BOOL g_bGenerateTransparencyBackground = FALSE;
-
+bool g_bGenerateTransparencyBackground = FALSE;
+bool g_useOMP = TRUE;
 
 //######################################
 // Setup information
 //######################################
 
 const AMOVIESETUP_MEDIATYPE sudPinTypes = {
-    &MEDIATYPE_Video,       // Major type
-    &MEDIASUBTYPE_NULL      // Minor type
+	&MEDIATYPE_Video,       // Major type
+	&MEDIASUBTYPE_NULL      // Minor type
 };
 
 const AMOVIESETUP_PIN sudpPins[] = {
-    { L"Input",             // Pins string name
-      FALSE,                // Is it rendered
-      FALSE,                // Is it an output
-      FALSE,                // Are we allowed none
-      FALSE,                // And allowed many
-      &CLSID_NULL,          // Connects to filter
-      NULL,                 // Connects to pin
-      1,                    // Number of types
-      &sudPinTypes          // Pin information
-    },
-    { L"Output",            // Pins string name
-      FALSE,                // Is it rendered
-      TRUE,                 // Is it an output
-      FALSE,                // Are we allowed none
-      FALSE,                // And allowed many
-      &CLSID_NULL,          // Connects to filter
-      NULL,                 // Connects to pin
-      1,                    // Number of types
-      &sudPinTypes          // Pin information
-    }
+	{ L"Input",             // Pins string name
+	  FALSE,                // Is it rendered
+	  FALSE,                // Is it an output
+	  FALSE,                // Are we allowed none
+	  FALSE,                // And allowed many
+	  &CLSID_NULL,          // Connects to filter
+	  NULL,                 // Connects to pin
+	  1,                    // Number of types
+	  &sudPinTypes          // Pin information
+	},
+	{ L"Output",            // Pins string name
+	  FALSE,                // Is it rendered
+	  TRUE,                 // Is it an output
+	  FALSE,                // Are we allowed none
+	  FALSE,                // And allowed many
+	  &CLSID_NULL,          // Connects to filter
+	  NULL,                 // Connects to pin
+	  1,                    // Number of types
+	  &sudPinTypes          // Pin information
+	}
 };
 
 const AMOVIESETUP_FILTER sudHapDecoder = {
 	&CLSID_HapDecoder,      // Filter CLSID
 	L"HapDecoder",          // String name 
 	MERIT_NORMAL,           // Filter merit - MERIT_DO_NOT_USE ?
-    2,                      // Number of pins
-    sudpPins                // Pin information
+	2,                      // Number of pins
+	sudpPins                // Pin information
 };
 
 //######################################
@@ -70,17 +70,17 @@ const AMOVIESETUP_FILTER sudHapDecoder = {
 //######################################
 CFactoryTemplate g_Templates[] = {
 
-    { L"HapDecoder"
-    , &CLSID_HapDecoder
-    , CHapDecoder::CreateInstance
-    , NULL
-    , &sudHapDecoder }
+	{ L"HapDecoder"
+	, &CLSID_HapDecoder
+	, CHapDecoder::CreateInstance
+	, NULL
+	, &sudHapDecoder }
 
 	,
 
-    { L"Settings"
-    , &CLSID_HapDecoderPropertyPage
-    , CHapDecoderProperties::CreateInstance }
+	{ L"Settings"
+	, &CLSID_HapDecoderPropertyPage
+	, CHapDecoderProperties::CreateInstance }
 
 };
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
@@ -103,8 +103,8 @@ CUnknown *CHapDecoder::CreateInstance(LPUNKNOWN punk, HRESULT *phr) {
 // Constructor
 //######################################
 CHapDecoder::CHapDecoder(TCHAR *tszName, LPUNKNOWN punk, HRESULT *phr) :
-    CTransformFilter(tszName, punk, CLSID_HapDecoder),
-    CPersistStream(punk, phr)
+	CTransformFilter(tszName, punk, CLSID_HapDecoder),
+	CPersistStream(punk, phr)
 {}
 
 //######################################
@@ -116,20 +116,20 @@ CHapDecoder::~CHapDecoder() {
 	// There are obviously better solutions - TODO
 	Sleep(200);
 
-	lag_aligned_free(_dxtBuffer, "dxtBuffer");
-	lag_aligned_free(_tmpBuffer, "tmpBuffer");
+	LAG_ALIGNED_FREE(_dxtBuffer, "dxtBuffer");
+	LAG_ALIGNED_FREE(_tmpBuffer, "tmpBuffer");
 }
 
 //######################################
 // NonDelegatingQueryInterface
 //######################################
 STDMETHODIMP CHapDecoder::NonDelegatingQueryInterface(REFIID riid, void **ppv) {
-    CheckPointer(ppv,E_POINTER);
+	CheckPointer(ppv,E_POINTER);
 	if (riid == IID_ISpecifyPropertyPages) {
-        return GetInterface((ISpecifyPropertyPages *) this, ppv);
-    } else {
-        return CTransformFilter::NonDelegatingQueryInterface(riid, ppv);
-    }
+		return GetInterface((ISpecifyPropertyPages *) this, ppv);
+	} else {
+		return CTransformFilter::NonDelegatingQueryInterface(riid, ppv);
+	}
 }
 
 //######################################
@@ -146,12 +146,12 @@ void HapMTDecode(HapDecodeWorkFunction function, void *info, unsigned int count,
 //######################################
 HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMediaSampleOut) {
 
-    CheckPointer(pMediaSampleIn, E_POINTER);
-    CheckPointer(pMediaSampleOut, E_POINTER);
+	CheckPointer(pMediaSampleIn, E_POINTER);
+	CheckPointer(pMediaSampleOut, E_POINTER);
 
 	HRESULT hr;
 
-    // Copy the sample properties across
+	// Copy the sample properties across
 	hr = Copy(pMediaSampleIn, pMediaSampleOut);
 	if (FAILED(hr)) return hr;
 
@@ -203,7 +203,7 @@ HRESULT CHapDecoder::Transform (IMediaSample *pMediaSampleIn, IMediaSample *pMed
 
 	pMediaSampleOut->SetActualDataLength(outputBufferDecodedSize);
 
-    return NOERROR;
+	return NOERROR;
 }
 
 //######################################
@@ -229,13 +229,12 @@ HRESULT CHapDecoder::Decompress (PBYTE pSrcBuffer, PBYTE pDestBuffer, DWORD dwSi
 
 	if (res != HapResult_No_Error) return E_FAIL;
 
-
 	if (outputBufferTextureFormat == HapTextureFormat_YCoCg_DXT5) { // Hap Q
 
 		int outputSize = DeCompressYCoCgDXT5(_dxtBuffer, _tmpBuffer, _width, _height, _width * 4);
 
 		//ASSERT(outputSize == _width * _height * 4);
-		ConvertCoCgAY8888ToBGRA(_tmpBuffer, pDestBuffer, _width, _height, _width * 4, _width * 4, 0);
+		ConvertCoCgAY8888ToBGRA(_tmpBuffer, pDestBuffer, _width, _height, _width * 4, _width * 4, m_useOMP);
 
 	}
 	else { // Hap1, Hap Alpha
@@ -244,11 +243,11 @@ HRESULT CHapDecoder::Decompress (PBYTE pSrcBuffer, PBYTE pDestBuffer, DWORD dwSi
 		squish::DecompressImage(_tmpBuffer, _width, _height, _dxtBuffer, _dxtFlags);
 		
 		// Swap red-blue channels
-		if (g_bGenerateTransparencyBackground && outputBufferTextureFormat == HapTextureFormat_RGBA_DXT5) {
-			Blend32bppTo32bppChecker(_width, _height, true, _tmpBuffer, pDestBuffer);
+		if (m_bGenerateTransparencyBackground && outputBufferTextureFormat == HapTextureFormat_RGBA_DXT5) {
+			Blend32bppTo32bppChecker(_width, _height, true, _tmpBuffer, pDestBuffer, m_useOMP);
 		}
 		else {
-			ConvertBGRAtoRGBA(_width, _height, _tmpBuffer, pDestBuffer);
+			ConvertBGRAtoRGBA(_width, _height, _tmpBuffer, pDestBuffer, m_useOMP);
 		}
 	}
 
@@ -261,63 +260,63 @@ HRESULT CHapDecoder::Decompress (PBYTE pSrcBuffer, PBYTE pDestBuffer, DWORD dwSi
 //######################################
 HRESULT CHapDecoder::Copy (IMediaSample *pSource, IMediaSample *pDest) const {
 
-    CheckPointer(pSource, E_POINTER);   
-    CheckPointer(pDest ,E_POINTER);   
+	CheckPointer(pSource, E_POINTER);   
+	CheckPointer(pDest ,E_POINTER);   
 
-    // Copy the sample times
-    REFERENCE_TIME TimeStart, TimeEnd;
-    if (NOERROR == pSource->GetTime(&TimeStart, &TimeEnd)) {
-        pDest->SetTime(&TimeStart, &TimeEnd);
-    }
+	// Copy the sample times
+	REFERENCE_TIME TimeStart, TimeEnd;
+	if (NOERROR == pSource->GetTime(&TimeStart, &TimeEnd)) {
+		pDest->SetTime(&TimeStart, &TimeEnd);
+	}
 
-    LONGLONG MediaStart, MediaEnd;
-    if (pSource->GetMediaTime(&MediaStart,&MediaEnd) == NOERROR) {
-        pDest->SetMediaTime(&MediaStart,&MediaEnd);
-    }
+	LONGLONG MediaStart, MediaEnd;
+	if (pSource->GetMediaTime(&MediaStart,&MediaEnd) == NOERROR) {
+		pDest->SetMediaTime(&MediaStart,&MediaEnd);
+	}
 
-    // Copy the Sync point property
-    HRESULT hr = pSource->IsSyncPoint();
-    if (hr == S_OK) {
-        pDest->SetSyncPoint(TRUE);
-    }
-    else if (hr == S_FALSE) {
-        pDest->SetSyncPoint(FALSE);
-    }
-    else {  // an unexpected error has occured...
-        return E_UNEXPECTED;
-    }
+	// Copy the Sync point property
+	HRESULT hr = pSource->IsSyncPoint();
+	if (hr == S_OK) {
+		pDest->SetSyncPoint(TRUE);
+	}
+	else if (hr == S_FALSE) {
+		pDest->SetSyncPoint(FALSE);
+	}
+	else {  // an unexpected error has occured...
+		return E_UNEXPECTED;
+	}
 
-    // Copy the media type
-    AM_MEDIA_TYPE *pMediaType;
-    pSource->GetMediaType(&pMediaType);
-    pDest->SetMediaType(pMediaType);
-    DeleteMediaType(pMediaType);
+	// Copy the media type
+	AM_MEDIA_TYPE *pMediaType;
+	pSource->GetMediaType(&pMediaType);
+	pDest->SetMediaType(pMediaType);
+	DeleteMediaType(pMediaType);
 
-    // Copy the preroll property
-    hr = pSource->IsPreroll();
-    if (hr == S_OK) {
-        pDest->SetPreroll(TRUE);
-    }
-    else if (hr == S_FALSE) {
-        pDest->SetPreroll(FALSE);
-    }
-    else {  // an unexpected error has occured...
-        return E_UNEXPECTED;
-    }
+	// Copy the preroll property
+	hr = pSource->IsPreroll();
+	if (hr == S_OK) {
+		pDest->SetPreroll(TRUE);
+	}
+	else if (hr == S_FALSE) {
+		pDest->SetPreroll(FALSE);
+	}
+	else {  // an unexpected error has occured...
+		return E_UNEXPECTED;
+	}
 
-    // Copy the discontinuity property
-    hr = pSource->IsDiscontinuity();
-    if (hr == S_OK) {
+	// Copy the discontinuity property
+	hr = pSource->IsDiscontinuity();
+	if (hr == S_OK) {
 		pDest->SetDiscontinuity(TRUE);
-    }
-    else if (hr == S_FALSE) {
-        pDest->SetDiscontinuity(FALSE);
-    }
-    else {  // an unexpected error has occured...
-        return E_UNEXPECTED;
-    }
+	}
+	else if (hr == S_FALSE) {
+		pDest->SetDiscontinuity(FALSE);
+	}
+	else {  // an unexpected error has occured...
+		return E_UNEXPECTED;
+	}
 
-    return NOERROR;
+	return NOERROR;
 }
 
 //######################################
@@ -326,12 +325,12 @@ HRESULT CHapDecoder::Copy (IMediaSample *pSource, IMediaSample *pDest) const {
 HRESULT CHapDecoder::CheckInputType (const CMediaType *pMediaType) {
 	NOTE("CheckInputType");
 
-    CheckPointer(pMediaType, E_POINTER);
+	CheckPointer(pMediaType, E_POINTER);
 
-    // check this is a VIDEOINFOHEADER type
-    if (*pMediaType->FormatType() != FORMAT_VideoInfo) {
-        return VFW_E_TYPE_NOT_ACCEPTED;
-    }
+	// check this is a VIDEOINFOHEADER type
+	if (*pMediaType->FormatType() != FORMAT_VideoInfo) {
+		return VFW_E_TYPE_NOT_ACCEPTED;
+	}
 
 	// Check the format looks reasonably ok
 	ULONG Length = pMediaType->FormatLength();
@@ -351,7 +350,7 @@ HRESULT CHapDecoder::CheckInputType (const CMediaType *pMediaType) {
 	const GUID *pSubType = pMediaType->Subtype();
 	if (*pSubType != MEDIASUBTYPE_Hap1 && *pSubType != MEDIASUBTYPE_Hap5 && *pSubType != MEDIASUBTYPE_HapY) return VFW_E_TYPE_NOT_ACCEPTED;;
 
-    return S_OK;
+	return S_OK;
 }
 
 //######################################
@@ -445,12 +444,12 @@ HRESULT CHapDecoder::GetMediaType (int iPosition, CMediaType *pMediaType) {
 
 //######################################
 // CheckTransform
-// Check a transform can be done between these formats
+// Check if a transform can be done between these formats
 //######################################
 HRESULT CHapDecoder::CheckTransform (const CMediaType *pMediaTypeIn, const CMediaType *pMediaTypeOut) {
 
-    CheckPointer(pMediaTypeIn, E_POINTER);
-    CheckPointer(pMediaTypeOut, E_POINTER);
+	CheckPointer(pMediaTypeIn, E_POINTER);
+	CheckPointer(pMediaTypeOut, E_POINTER);
 
 	// check the input subtype - do we need this here?
 	GUID subTypeIn = pMediaTypeIn->subtype;
@@ -497,11 +496,11 @@ HRESULT CHapDecoder::CheckTransform (const CMediaType *pMediaTypeIn, const CMedi
 //######################################
 HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTIES *pProperties) {
 
-    // Is the input pin connected
-    if (m_pInput->IsConnected() == FALSE) return E_UNEXPECTED;
+	// Is the input pin connected
+	if (m_pInput->IsConnected() == FALSE) return E_UNEXPECTED;
  
-    CheckPointer(pAlloc, E_POINTER);
-    CheckPointer(pProperties, E_POINTER);
+	CheckPointer(pAlloc, E_POINTER);
+	CheckPointer(pProperties, E_POINTER);
 
 	// Calculate needed output buffer size
 	if (m_subTypeOut == MEDIASUBTYPE_RGB32) {
@@ -516,7 +515,7 @@ HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTI
 		int bufferSize = align_round(_width * 4, 8) * _height + 2048;
 		_tmpBuffer = (unsigned char *)lag_aligned_malloc(_tmpBuffer, bufferSize, 16, "tmpBuffer");
 		if (!_tmpBuffer) {
-			lag_aligned_free(_dxtBuffer, "dxtBuffer");
+			LAG_ALIGNED_FREE(_dxtBuffer, "dxtBuffer");
 			return E_OUTOFMEMORY;
 		}
 
@@ -529,45 +528,49 @@ HRESULT CHapDecoder::DecideBufferSize (IMemAllocator *pAlloc, ALLOCATOR_PROPERTI
 
 	}
 
-    // Ask the allocator to reserve us some sample memory, NOTE the function
-    // can succeed (that is return NOERROR) but still not have allocated the
-    // memory that we requested, so we must check we got whatever we wanted
+	// Ask the allocator to reserve us some sample memory, NOTE the function
+	// can succeed (that is return NOERROR) but still not have allocated the
+	// memory that we requested, so we must check we got whatever we wanted
 
 	pProperties->cBuffers = 1;
 	pProperties->cbBuffer = m_outputBufferSize;
 
 	// Set allocator properties.
-    ALLOCATOR_PROPERTIES Actual;
-    HRESULT hr = pAlloc->SetProperties(pProperties, &Actual);
-    if (FAILED(hr)) return hr;
+	ALLOCATOR_PROPERTIES Actual;
+	HRESULT hr = pAlloc->SetProperties(pProperties, &Actual);
+	if (FAILED(hr)) return hr;
 
 	// Even when it succeeds, check the actual result.
-    if (pProperties->cBuffers > Actual.cBuffers || pProperties->cbBuffer > Actual.cbBuffer) {
+	if (pProperties->cBuffers > Actual.cBuffers || pProperties->cbBuffer > Actual.cbBuffer) {
 		return E_FAIL;
-    }
+	}
 
-    return S_OK;
+	// store compression settings for this session
+	m_bGenerateTransparencyBackground = g_bGenerateTransparencyBackground;
+	m_useOMP = g_useOMP;
+
+	return S_OK;
 }
 
 //######################################
 // GetClassID
 //######################################
 STDMETHODIMP CHapDecoder::GetClassID (CLSID *pClsid) {
-    return CBaseFilter::GetClassID(pClsid);
+	return CBaseFilter::GetClassID(pClsid);
 }
 
 //######################################
 // GetPages
 //######################################
 STDMETHODIMP CHapDecoder::GetPages(CAUUID *pPages) {
-    CheckPointer(pPages,E_POINTER);
+	CheckPointer(pPages,E_POINTER);
 
-    pPages->cElems = 1;
-    pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID));
-    if (pPages->pElems == NULL) return E_OUTOFMEMORY;
+	pPages->cElems = 1;
+	pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID));
+	if (pPages->pElems == NULL) return E_OUTOFMEMORY;
 
-    *(pPages->pElems) = CLSID_HapDecoderPropertyPage;
-    return NOERROR;
+	*(pPages->pElems) = CLSID_HapDecoderPropertyPage;
+	return NOERROR;
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 //
 #define IDD_HAPDECODERPROP              101
 #define IDC_CHECK1                      1000
+#define IDC_CHECK2                      1012
 #define IDS_TITLE                       1015
 #define IDS_STATIC                      -1
 
@@ -15,7 +16,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        102
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

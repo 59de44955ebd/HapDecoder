@@ -10,8 +10,8 @@ void ImageMath_MatrixMultiply8888(const void *src,
 	int32_t divisor,          // Applied after the matrix op
 	const int16_t	*pre_bias,	// An array of 4 int16_t or NULL, added before matrix op
 	const int32_t *post_bias,	// An array of 4 int32_t or NULL, added after matrix op
-	int allow_tile); // if non-zero, operation may be tiled and multithreaded
+	bool bUseOMP);
 
-void ConvertBGRAtoRGBA(int width, int height, const unsigned char* a, unsigned char* b);
+void ConvertBGRAtoRGBA(int width, int height, const unsigned char* a, unsigned char* b, bool bUseOMP);
 void AlphaBlend(unsigned char* result, const unsigned char* fg, const unsigned char* bg);
-void Blend32bppTo32bppChecker(int width, int height, bool swapRedBlue, const unsigned char* a, unsigned char* b);
+void Blend32bppTo32bppChecker(int width, int height, bool swapRedBlue, const unsigned char* a, unsigned char* b, bool bUseOMP);
